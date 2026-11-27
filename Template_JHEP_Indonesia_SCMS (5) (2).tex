@@ -1,0 +1,871 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[indonesian]{babel}
+\usepackage{jheppub-scms}
+
+% ---- Paket tambahan yang dibutuhkan isi makalah (tabel, gambar, diagram alir) ----
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{float}
+% DOI pada daftar pustaka dibuat dapat diklik (tautan ke doi.org)
+\newcommand{\doi}[1]{doi: \href{https://doi.org/#1}{#1}}
+\usepackage{diagbox}
+\usepackage{enumitem}
+\setlist[enumerate]{itemsep=2pt,topsep=4pt,parsep=0pt}
+\usepackage{placeins}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric}
+\usepackage{adjustbox}
+\tikzset{
+  term/.style={rectangle,rounded corners=7pt,draw,align=center,font=\footnotesize,inner sep=3pt},
+  proc/.style={rectangle,draw,align=center,font=\footnotesize,inner sep=3pt,text width=5.6cm,minimum height=0.65cm},
+  proc3/.style={rectangle,draw,align=center,font=\scriptsize,inner sep=2.5pt,text width=3.5cm,minimum height=0.6cm},
+  dec/.style={diamond,draw,aspect=2.6,align=center,font=\footnotesize,inner sep=0pt,text width=3.2cm},
+  dec3/.style={diamond,draw,aspect=2.2,align=center,font=\scriptsize,inner sep=0pt,text width=1.9cm},
+  drop/.style={rectangle,draw,dashed,align=center,font=\footnotesize,inner sep=3pt},
+  arr/.style={-{Stealth[length=2mm]}},
+  lbl/.style={font=\scriptsize,inner sep=1.5pt}
+}
+
+% ---- Makro tabel contoh transportasi 3x3 ----
+% \alok{nilai}{urutan} : lingkaran berisi alokasi; urutan boleh dikosongkan {}
+\newcommand{\alok}[2]{%
+  \tikz[baseline=(c.base)]{\node[draw,circle,inner sep=1.4pt,font=\footnotesize] (c) {#1};}%
+  \ifx\relax#2\relax\else\raisebox{0.6ex}{\scriptsize$^{#2}$}\fi}
+
+% \sel{biaya}{alokasi}{urutan} : satu sel tabel
+\newcommand{\sel}[3]{%
+  \makebox[2.4cm][c]{\raisebox{-1.2ex}{#1}\hspace{0.7cm}\raisebox{0.7ex}{\ifx\relax#2\relax\else\alok{#2}{#3}\fi}}}
+
+% ---------------------------------------------------------------
+% Makro gambar: mencari <nama>.pdf/.png di folder gambar/ atau di folder utama;
+% jika belum ada, tampil kotak penanda supaya dokumen tetap terkompilasi.
+% ---------------------------------------------------------------
+\newcommand{\gambar}[4]{%
+  \begin{figure}[htbp]
+    \centering
+    \IfFileExists{gambar/#1.pdf}{\includegraphics[width=#2\textwidth]{gambar/#1.pdf}}{%
+    \IfFileExists{gambar/#1.png}{\includegraphics[width=#2\textwidth]{gambar/#1.png}}{%
+    \IfFileExists{#1.pdf}{\includegraphics[width=#2\textwidth]{#1.pdf}}{%
+    \IfFileExists{#1.png}{\includegraphics[width=#2\textwidth]{#1.png}}{%
+      \fbox{\parbox{#2\textwidth}{\centering\vspace{2cm}[Tempatkan gambar: \texttt{\detokenize{#1}}]\vspace{2cm}}}}}}}
+    \caption{#3}\label{#4}
+  \end{figure}}
+
+% ---- Judul, penulis, afiliasi (sesuai format Template JHEP Indonesia) ----
+\fpheader{TUGAS AKHIR RISET OPERASI 1, KELOMPOK [NOMOR KELOMPOK]}
+
+\title{\boldmath Optimasi Biaya Pengiriman Komoditas Kesehatan HIV/AIDS pada Data SCMS-USAID dengan Model Transportasi: Solusi Awal NWC, LCM, dan VAM yang Dioptimalkan dengan MODI}
+
+% Angka 1 di bawah menandai catatan kaki, bukan afiliasi.
+\author[a,1]{[Mahesa Rahmat Anugrah (5002251036)],\note{Penulis korespondensi.}}
+\author[a]{[Muhammad Badranaya Ramadhani (5002251030)],}
+\author[a]{[Muhammad Fadhil Ananda (5002251078)]}
+\author[a]{[Najwa Andity Khairani (5002251040)]}
+\author[a]{[Naufal Khalid Sucahyo (5002251110)]}
+\author[a]{dan [Naufal Rizqi Habibi (5002251056)]}
+
+\affiliation[a]{[Departemen Matematika], Institut Teknologi Sepuluh Nopember,\\Surabaya, Jawa Timur, Indonesia 60111}
+
+\emailAdd{[mahesarahma09@gmail.com]}
+
+\abstract{Artikel ini memodelkan pengiriman obat dan alat tes HIV/AIDS yang dikelola Supply Chain Management System (SCMS) milik USAID sebagai masalah transportasi. Data pengiriman 2006--2015 sebanyak 10.324 baris dibersihkan menjadi 6.037 pengiriman, yang membentuk 22 node sumber (21 kelompok produsen dan satu gudang regional SCMS), 38 node tujuan berupa negara penerima, dan 258 rute teramati. Pasokan dan permintaan diambil dari total berat pengiriman sehingga model berimbang pada 19.550.180 kg, sedangkan biaya per kilogram dihitung sebagai rata-rata tertimbang pada tiap rute. Rute yang tidak pernah muncul di data (578 dari 836 sel) dilarang dengan biaya Big-M. Solusi awal dicari dengan North-West Corner Rule (NWC), Least Cost Method (LCM), dan Vogel's Approximation Method (VAM), kemudian masing-masing diperbaiki dengan metode MODI sampai optimal. NWC dan LCM semula menaruh 12,3\% dan 1,4\% muatan pada rute terlarang, sedangkan VAM langsung layak dengan biaya 56,69 juta USD. Ketiganya berakhir pada biaya optimal yang sama, yaitu 54,46 juta USD, atau 19,83\% di bawah biaya aktual 67,93 juta USD. Perbedaannya hanya pada jumlah iterasi MODI: 97 untuk NWC, 42 untuk LCM, dan 16 untuk VAM.}
+\keywords{model transportasi; NWC; LCM; VAM; MODI; rantai pasok}
+
+\begin{document}
+% Urutan pustaka dikunci sama dengan daftar pustaka pada naskah awal
+% (termasuk pustaka [5], [6], dan [15] yang tidak disitasi di teks).
+\nocite{larson2014,yadav2018,yadav2015,ripin2014,jamieson2016,mokheseng2017,ghazvinian2025,fasci,harrath2018,karagul2020,amaliah2022a,amaliah2022b,mathirajan2004,ackoraprah2022,patne2019,usaid2006,harris2020}
+\maketitle
+\raggedbottom
+
+% =====================================================================
+\section{Pendahuluan}
+\subsection{Latar Belakang}
+Pengobatan HIV/AIDS bergantung pada pasokan obat antiretroviral (ARV) dan alat tes yang datang tepat waktu. Di banyak negara berpendapatan rendah, barang-barang itu tidak diproduksi di dalam negeri. Barang harus dibeli dari pabrik di India, Eropa, Jepang, atau Amerika, lalu dikirim lintas benua ke gudang atau klinik di negara penerima. Salah satu operator logistik terbesar untuk keperluan ini adalah Supply Chain Management System (SCMS), yang dijalankan dengan dukungan USAID dalam kerangka program PEPFAR \cite{larson2014,yadav2018}. Sebagian pengiriman SCMS dikirim langsung dari pabrik ke negara tujuan (\textit{direct drop}), sebagian lain disinggahkan dulu di gudang regional (\textit{regional distribution center}, RDC) sebelum diteruskan.
+
+Ongkos angkut bukan angka kecil. Pada sampel yang dianalisis di sini, 6.037 pengiriman menghabiskan biaya \textit{freight} sekitar 67,9 juta USD untuk memindahkan hampir 19,6 ribu ton barang. Biaya per kilogram juga sangat tidak seragam: antar pengiriman, nilainya berkisar dari kurang dari 0,1 sampai lebih dari 1.600 USD/kg, bergantung pada moda, jarak, dan ukuran muatan. Karena itu pertanyaan ``barang dari sumber mana sebaiknya dikirim ke negara mana'' punya dampak finansial yang nyata.
+
+
+\subsection{Penelitian Terdahulu}
+
+Studi tentang rantai pasok produk kesehatan menegaskan bahwa distribusi yang efektif sangat menentukan ketersediaan obat serta kesinambungan program pengobatan. Yadav \cite{yadav2015} menelaah beragam faktor yang menyebabkan rendahnya kinerja rantai pasok produk kesehatan di negara berkembang. Pada konteks HIV/AIDS, Larson et al. \cite{larson2014} menyoroti strategi mitigasi risiko dalam rantai pasok ARV, sementara Ripin et al. \cite{ripin2014} menjelaskan proses pengadaan dan pengelolaan distribusi ARV mulai dari produsen sampai ke fasilitas kesehatan. Selain itu, Yadav et al. \cite{yadav2018} meneliti praktik pengadaan lokal dalam sistem SCMS di sejumlah negara.
+
+Dari sisi prediksi dan optimasi pengiriman, Ghazvinian et al. \cite{ghazvinian2025} membangun model untuk memperkirakan biaya \textit{freight} dan lama pengiriman pada rantai pasok obat HIV. Model tersebut memakai \textit{Artificial Neural Network} (ANN) berarsitektur \textit{Multi-Layer Perceptron} (MLP), lalu hasil prediksinya dipadukan dengan algoritma Fmincon untuk optimasi multiobjektif. Walaupun sama-sama berkaitan dengan rantai pasok obat HIV, penelitian itu bersandar pada basis data PQR milik Global Fund dan PEPFAR, bukan dataset SCMS Delivery History.
+
+Penelitian yang paling dekat dengan sumber data makalah ini adalah karya Fasci \cite{fasci} lewat proyek \textit{Supply-Chain-Pricing-USAID}. Proyek tersebut menganalisis sekaligus memprediksi biaya pengiriman dari \textit{Supply Chain Shipment Pricing Dataset} dengan beberapa pendekatan \textit{machine learning}, yaitu \textit{Multiple Linear Regression}, \textit{Gradient Boosted Trees}, XGBoost, dan LightGBM. Berbeda dari fokus prediksi biaya tersebut, makalah ini diarahkan pada optimasi alokasi pengiriman melalui model transportasi.
+
+Dalam kajian optimasi transportasi, Harrath dan Kaabi \cite{harrath2018} serta Karagul dan Sahin \cite{karagul2020} mengembangkan metode untuk menghasilkan solusi dasar layak awal. Amaliah et al. \cite{amaliah2022a,amaliah2022b} turut mengusulkan pendekatan solusi awal, sedangkan Mathirajan dan Meenakshi \cite{mathirajan2004} menguji sejumlah variasi VAM. Untuk kasus yang memuat rute tidak tersedia, Ackora-Prah et al. \cite{ackoraprah2022} membahas penyelesaian model transportasi dengan rute terlarang.
+
+Bertolak dari penelitian-penelitian tersebut, makalah ini menerapkan model transportasi pada data pengiriman SCMS-USAID dengan membandingkan NWC, LCM, dan VAM sebagai metode penyusun solusi awal, lalu menyempurnakan hasilnya dengan MODI. Perhatian khusus diberikan pada rute yang tidak teramati, yakni 578 dari 836 pasangan sumber dan tujuan yang mungkin, sehingga penanganan rute terlarang menjadi bagian krusial dalam proses optimasi.
+
+
+\subsection{Alasan Pemilihan Model Transportasi}
+Struktur masalahnya cocok dengan model transportasi. Ada sejumlah titik pasokan dengan jumlah barang yang terbatas, ada sejumlah titik permintaan dengan kebutuhan tertentu, dan ongkos angkut per satuan barang berbeda untuk setiap pasangan sumber--tujuan. Yang dicari adalah jumlah barang pada tiap pasangan yang membuat total ongkos paling kecil. Dalam penelitian ini terdapat 22 sumber dan 38 tujuan, sehingga terdapat 836 kemungkinan pasangan sumber dan tujuan. Oleh karena itu, diperlukan model transportasi untuk menentukan alokasi pengiriman yang memenuhi seluruh batasan pasokan dan permintaan dengan biaya minimum.
+
+Pendekatan lain kurang pas untuk data ini. Dynamic programming lebih cocok untuk keputusan bertahap, sedangkan model jaringan umum lebih berguna ketika ada simpul perantara dengan aturan aliran yang rumit. Data SCMS hanya mencatat asal, tujuan, berat, dan ongkos tiap pengiriman, sehingga bentuk paling alami adalah dua himpunan node (sumber dan tujuan) yang dihubungkan oleh busur berbiaya. Itulah definisi model transportasi \cite{amaliah2022a,karagul2020}.
+
+\subsection{Rumusan Masalah}
+Berdasarkan latar belakang di atas, rumusan masalah penelitian ini adalah sebagai berikut. Makalah ini menjawab empat pertanyaan.
+\begin{enumerate}
+  \item Bagaimana data pengiriman riil yang berantakan diubah menjadi masalah transportasi lengkap dengan node, pasokan, permintaan, dan biaya?
+  \item Bagaimana solusi awal dari NWC, LCM, dan VAM bila diterapkan pada data tersebut?
+  \item Bagaimana solusi awal itu diperbaiki dengan MODI hingga optimal dan berapa iterasi yang dibutuhkan masing-masing?
+  \item Seberapa jauh biaya optimal berbeda dari biaya aktual?
+\end{enumerate}
+
+\subsection{Tujuan Penelitian}
+Tujuan penelitian ini adalah sebagai berikut.
+\begin{enumerate}
+  \item Membentuk model transportasi dari data riil melalui pembersihan dan agregasi data.
+  \item Menentukan dan membandingkan solusi awal dari NWC, LCM, dan VAM.
+  \item Memperoleh solusi optimal dengan MODI dan membandingkan jumlah iterasi tiap metode.
+  \item Menghitung potensi penghematan biaya terhadap biaya aktual.
+\end{enumerate}
+
+\subsection{Batasan Masalah}
+
+Ruang lingkup penelitian ini dibatasi pada hal-hal berikut.
+
+\begin{enumerate}
+    \item Penelitian memakai data historis SCMS-USAID periode 2006--2015 yang berasal dari \textit{Supply Chain Shipment Pricing Dataset}.
+
+    \item Analisis dipusatkan pada penyusunan dan optimasi alokasi pengiriman antara node sumber dan negara tujuan, dengan menggunakan data yang telah melewati tahap pembersihan.
+
+    \item Metode penyelesaian yang dikaji hanya mencakup North West Corner (NWC), Least Cost Method (LCM), dan Vogel's Approximation Method (VAM) untuk membentuk solusi awal, serta Modified Distribution Method (MODI) untuk optimasinya.
+
+    \item Evaluasi dilakukan dengan membandingkan biaya hasil optimasi terhadap biaya pengiriman aktual pada dataset. Penerapan alokasi hasil optimasi dalam kegiatan distribusi operasional berada di luar cakupan penelitian.
+\end{enumerate}
+
+% =====================================================================
+\section{Landasan Teori}
+\subsection{Model Transportasi}
+Misalkan ada $m$ sumber dengan pasokan $a_i$ dan $n$ tujuan dengan permintaan $b_j$. Ongkos mengirim satu satuan barang dari sumber $i$ ke tujuan $j$ adalah $c_{ij}$, dan jumlah yang dikirim adalah $x_{ij}$. Modelnya:
+\begin{align}
+\min Z &= \sum_{i=1}^{m}\sum_{j=1}^{n} c_{ij}x_{ij}, \label{eq:obj}\\
+\text{dengan}\quad \sum_{j=1}^{n} x_{ij} &= a_i, \quad i=1,\ldots,m, \label{eq:sup}\\
+\sum_{i=1}^{m} x_{ij} &= b_j, \quad j=1,\ldots,n, \label{eq:dem}\\
+x_{ij} &\ge 0. \label{eq:nonneg}
+\end{align}
+Model dikatakan berimbang jika $\sum_i a_i = \sum_j b_j$. Pada kondisi itu, satu solusi dasar layak memuat paling banyak $m+n-1$ variabel dasar. Untuk data ini $m+n-1 = 22+38-1 = 59$.
+
+\subsection{NWC}
+NWC memulai alokasi dari sel pojok kiri atas tanpa memperhatikan biaya. Langkahnya:
+\begin{enumerate}
+  \item Alokasikan $\min(a_i,b_j)$ pada sel yang sedang ditinjau.
+  \item Kurangi pasokan dan permintaan dengan jumlah tersebut.
+  \item Bila pasokan baris habis pindah ke baris berikutnya, bila permintaan kolom habis pindah ke kolom berikutnya.
+  \item Ulangi sampai semua terpenuhi.
+\end{enumerate}
+Metode ini sangat cepat tetapi hasilnya sepenuhnya ditentukan oleh urutan baris dan kolom \cite{harrath2018,karagul2020}. Dalam penelitian ini baris dan kolom diurutkan dari volume terbesar ke terkecil.
+
+\subsection{LCM}
+Langkah LCM:
+\begin{enumerate}
+  \item LCM memilih sel dengan biaya terkecil di antara baris dan kolom yang masih aktif.
+  \item Alokasikan sebanyak mungkin pada sel tersebut.
+  \item Coret baris atau kolom yang sudah terpenuhi.
+  \item Proses berhenti ketika tidak ada baris atau kolom aktif.
+  \item Bila ada dua sel berbiaya sama, dipilih yang bisa menampung alokasi lebih besar.
+\end{enumerate}
+Karena langsung melihat biaya, LCM umumnya lebih baik daripada NWC, tetapi pilihannya serakah: sel murah diambil lebih dulu tanpa memikirkan akibat bagi sel lain \cite{amaliah2022b,karagul2020}.
+
+\subsection{VAM}
+VAM menambahkan gagasan biaya peluang. Langkahnya:
+\begin{enumerate}
+  \item Pada setiap iterasi dihitung penalti tiap baris dan kolom aktif, yaitu selisih antara dua biaya terkecil di baris atau kolom itu:
+  \begin{equation}
+  p_i = c^{(2)}_i - c^{(1)}_i, \qquad q_j = c^{(2)}_j - c^{(1)}_j, \label{eq:pen}
+  \end{equation}
+  dengan $c^{(1)}$ dan $c^{(2)}$ masing-masing biaya terkecil pertama dan kedua.
+  \item Baris atau kolom dengan penalti terbesar dipilih.
+  \item Sel berbiaya terkecil di dalamnya diisi semaksimal mungkin.
+\end{enumerate}
+Penalti besar berarti kerugian besar bila sel termurah tidak dipakai, sehingga garis itu perlu didahulukan \cite{mathirajan2004,amaliah2022a}. Jika hanya tersisa satu elemen aktif pada suatu garis, penaltinya diambil sama dengan biayanya.
+
+Contoh pengisian ketiga metode pada masalah transportasi $3\times 3$ ditunjukkan pada Tabel~\ref{tab:contoh-nwc}, Tabel~\ref{tab:contoh-lcm}, dan Tabel~\ref{tab:contoh-vam}.
+
+% ---------------- NWC ----------------
+\begin{table}[htbp]
+\centering
+\renewcommand{\arraystretch}{1.9}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\diagbox{Sumber}{Tujuan} & \makebox[2.4cm][c]{D} & \makebox[2.4cm][c]{E} & \makebox[2.4cm][c]{F} & Pasokan \\ \hline
+A & \sel{5}{20}{}  & \sel{8}{30}{}  & \sel{4}{}{}   & 50 \\ \hline
+B & \sel{6}{}{}    & \sel{6}{40}{}  & \sel{3}{}{}   & 40 \\ \hline
+C & \sel{3}{}{}    & \sel{9}{25}{}  & \sel{6}{35}{} & 60 \\ \hline
+Permintaan & 20 & 95 & 35 & 150 \\ \hline
+\end{tabular}
+\caption{Contoh solusi awal metode NWC pada masalah transportasi $3\times 3$. Total biaya $Z = 5(20)+8(30)+6(40)+9(25)+6(35) = 1.015$.}\label{tab:contoh-nwc}
+\end{table}
+
+% ---------------- LCM ----------------
+\begin{table}[htbp]
+\centering
+\renewcommand{\arraystretch}{1.9}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\diagbox{Sumber}{Tujuan} & \makebox[2.4cm][c]{D} & \makebox[2.4cm][c]{E} & \makebox[2.4cm][c]{F} & Pasokan \\ \hline
+A & \sel{5}{}{}    & \sel{8}{50}{4} & \sel{4}{}{}    & 50 \\ \hline
+B & \sel{6}{}{}    & \sel{6}{5}{3}  & \sel{3}{35}{1} & 40 \\ \hline
+C & \sel{3}{20}{2} & \sel{9}{40}{5} & \sel{6}{}{}    & 60 \\ \hline
+Permintaan & 20 & 95 & 35 & 150 \\ \hline
+\end{tabular}
+\caption{Contoh solusi awal metode LCM pada masalah yang sama. Angka kecil di samping lingkaran menunjukkan urutan pengisian. Total biaya $Z = 8(50)+6(5)+3(35)+3(20)+9(40) = 955$.}\label{tab:contoh-lcm}
+\end{table}
+
+% ---------------- VAM ----------------
+\begin{table}[htbp]
+\centering
+\renewcommand{\arraystretch}{1.9}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\diagbox{Sumber}{Tujuan} & \makebox[2.4cm][c]{D} & \makebox[2.4cm][c]{E} & \makebox[2.4cm][c]{F} & Pasokan \\ \hline
+A & \sel{5}{}{}    & \sel{8}{50}{4} & \sel{4}{}{}    & 50 \\ \hline
+B & \sel{6}{}{}    & \sel{6}{5}{5}  & \sel{3}{35}{1} & 40 \\ \hline
+C & \sel{3}{20}{2} & \sel{9}{40}{3} & \sel{6}{}{}    & 60 \\ \hline
+Permintaan & 20 & 95 & 35 & 150 \\ \hline
+\end{tabular}
+\caption{Contoh solusi awal metode VAM pada masalah yang sama. Pada iterasi pertama penalti baris B dan C sama-sama terbesar (3); dipilih baris B karena sel termurahnya dapat menampung alokasi lebih besar. Total biaya $Z = 8(50)+6(5)+3(35)+3(20)+9(40) = 955$.}\label{tab:contoh-vam}
+\end{table}
+
+
+\subsection{MODI}
+\textit{Modified distribution} (MODI), atau metode $u$--$v$, dipakai untuk memeriksa dan memperbaiki solusi dasar layak \cite{harrath2018,karagul2020}. Langkahnya:
+\begin{enumerate}
+  \item Untuk setiap sel basis berlaku $u_i + v_j = c_{ij}$. Dengan menetapkan $u_1 = 0$, seluruh $u_i$ dan $v_j$ diperoleh dari $m+n-1$ persamaan tersebut.
+  \item Untuk sel non-basis dihitung biaya reduksi (\textit{reduced cost})
+  \begin{equation}
+  d_{ij} = c_{ij} - u_i - v_j. \label{eq:red}
+  \end{equation}
+  \item Jika semua $d_{ij} \ge 0$, solusi sudah optimal.
+  \item Jika masih ada yang negatif, sel dengan $d_{ij}$ paling negatif dipilih sebagai sel masuk.
+  \item Sel masuk bersama sel-sel basis membentuk tepat satu siklus tertutup. Sel-sel pada siklus diberi tanda $+$ dan $-$ bergantian, dimulai dengan $+$ pada sel masuk.
+  \item Dengan $\theta = \min x_{ij}$ pada sel bertanda $-$, nilai $\theta$ ditambahkan ke sel bertanda $+$ dan dikurangkan dari sel bertanda $-$. Sel bertanda $-$ yang menjadi nol keluar dari basis.
+  \item Perubahan biaya total pada satu iterasi adalah $\theta d_{ij} \le 0$, sehingga biaya tidak pernah naik. Proses diulang sampai tidak ada $d_{ij}$ negatif.
+\end{enumerate}
+
+\subsection{Penanganan Rute yang Tidak Tersedia}
+Tidak semua pasangan sumber--tujuan pernah dilayani. Permasalahan dengan pasangan yang dilarang atau tidak tersedia juga dibahas dalam literatur model transportasi berkendala rute terlarang \cite{ackoraprah2022}. Sel semacam ini diberi biaya $M$ yang jauh lebih besar daripada biaya mana pun, sehingga metode akan menghindarinya selama masih ada alternatif (teknik Big-M). Di sini $M = 10 \times \max c_{ij} = 3.512{,}1$ USD/kg. Bila di akhir sebuah solusi masih mengalokasikan barang pada sel ber-$M$, solusi itu tidak layak secara praktis dan biaya totalnya menjadi tidak bermakna. Selama iterasi MODI, sel ber-$M$ memiliki $d_{ij}$ yang sangat negatif sehingga cepat dikeluarkan dari basis.
+
+% =====================================================================
+\section{Data dan Metodologi}
+\subsection{Sumber Data}
+Data berasal dari SCMS Delivery History Dataset (versi 29 September 2015) yang dipublikasikan USAID; berkas tersebut diperlakukan sebagai sumber data primer penelitian \cite{usaid2006}. Berkas berisi 10.324 baris dan 33 kolom: identitas proyek, tanggal proses, nama vendor dan pabrik, deskripsi produk, harga, berat, dan biaya \textit{freight}. Berkas tidak berenkode UTF-8 sehingga harus dibaca dengan enkode \texttt{latin-1}; bila tidak, karakter pada nama negara seperti C\^ote d'Ivoire rusak. Data mencakup pengiriman ke 43 negara dari 88 nama lokasi pabrik berbeda.
+
+\subsection{Alur Penelitian}
+Seluruh tahapan penelitian diringkas pada Gambar~\ref{fig:alur}.
+\begin{enumerate}
+  \item Data mentah dibersihkan terlebih dahulu (rincian pada Subbab~\ref{sec:clean}).
+  \item Kemudian diagregasi menjadi node sumber, node tujuan, pasokan, permintaan, dan matriks biaya.
+  \item Matriks itu diselesaikan dengan tiga metode solusi awal yang berjalan sendiri-sendiri.
+  \item Tiap solusi awal diperbaiki dengan MODI.
+  \item Hasil ketiganya lalu dibandingkan.
+\end{enumerate}
+
+\begin{figure}[htbp]
+\centering
+\begin{adjustbox}{max width=\textwidth}
+\hyphenpenalty=10000 \exhyphenpenalty=10000
+\begin{tikzpicture}[node distance=0.5cm]
+\node[term] (a) {Mulai};
+\node[proc,below=of a] (b) {Mengambil dataset\\ SCMS Delivery History\\ (10.324 baris, 33 kolom)};
+\node[proc,below=of b] (c) {Pembersihan data (Gambar~\ref{fig:bersih})\\ $\rightarrow$ 6.037 pengiriman, 4 kolom};
+\node[proc,below=of c] (d) {Membentuk node sumber (22) dan tujuan (38);\\ menghitung $a_i$, $b_j$, dan $c_{ij}$};
+\node[proc,below=of d] (e) {Matriks biaya $22\times 38$;\\ sel kosong (578) diberi biaya Big-M};
+\node[proc,text width=1.6cm,below=0.7cm of e] (g2) {LCM};
+\node[proc,text width=1.6cm,left=0.4cm of g2] (g1) {NWC};
+\node[proc,text width=1.6cm,right=0.4cm of g2] (g3) {VAM};
+\node[proc,below=0.7cm of g2] (h) {Optimasi MODI untuk tiap solusi awal (Gambar~\ref{fig:modi})};
+\node[proc,below=of h] (i) {Membandingkan biaya, jumlah iterasi, dan alokasi akhir};
+\node[term,below=of i] (j) {Selesai};
+\draw[arr] (a)--(b); \draw[arr] (b)--(c); \draw[arr] (c)--(d); \draw[arr] (d)--(e);
+\draw[arr] (e.south)--(g2.north);
+\draw[arr] (e.south)--++(0,-0.3)-|(g1.north);
+\draw[arr] (e.south)--++(0,-0.3)-|(g3.north);
+\draw[arr] (g2.south)--(h.north);
+\draw[arr] (g1.south)--++(0,-0.3)-|(h.north);
+\draw[arr] (g3.south)--++(0,-0.3)-|(h.north);
+\draw[arr] (h)--(i); \draw[arr] (i)--(j);
+\end{tikzpicture}
+\end{adjustbox}
+\caption{Alur penelitian dari pengambilan data sampai perbandingan hasil.}\label{fig:alur}
+\end{figure}
+
+\subsection{Pembersihan Data}\label{sec:clean}
+Kolom \textit{Freight Cost (USD)} dan \textit{Weight (Kilograms)} ternyata tidak seluruhnya berisi angka. Ada baris yang berisi teks seperti \textit{Freight Included in Commodity Cost}, \textit{Invoiced Separately}, \textit{Weight Captured Separately}, dan rujukan semacam \textit{See DN-304 (ID\#:10589)}. Rujukan itu menandakan bahwa biaya dan berat untuk satu pengiriman hanya ditulis sekali, di baris lain yang memiliki nomor ASN/DN sama. Bila angka-angka dijumlahkan per baris, biaya satu pengiriman terhitung berkali-kali. Pemeriksaan membenarkan hal ini: dari 7.030 nomor pengiriman unik, tidak ada yang memiliki lebih dari satu baris berbiaya numerik, dan tidak ada pengiriman yang menuju lebih dari satu negara. Oleh karena itu satuan analisis dipilih berupa pengiriman (ASN/DN), bukan baris item. Alur pembersihan ditunjukkan pada Gambar~\ref{fig:bersih} dan rinciannya tercantum pada Tabel~\ref{tab:bersih}.
+
+\begin{figure}[htbp]
+\centering
+\begin{adjustbox}{max width=\textwidth,max height=0.8\textheight}
+\hyphenpenalty=10000 \exhyphenpenalty=10000
+\begin{tikzpicture}[node distance=0.38cm]
+\node[proc] (n1) {Dataset mentah: 10.324 baris, 33 kolom};
+\node[proc,below=of n1] (n2) {Membaca CSV dengan enkode latin-1};
+\node[proc,below=of n2] (n3) {Menghapus baris duplikat\\ (semua kolom identik selain ID)};
+\node[drop,right=0.9cm of n3] (d3) {4 baris dibuang\\ sisa 10.320 baris};
+\node[proc,below=of n3] (n4) {Mengubah freight dan berat menjadi angka (teks menjadi kosong); mengelompokkan baris per ASN/DN\\ $\rightarrow$ 7.030 pengiriman};
+\node[dec,below=of n4] (q1) {Ada baris dengan freight dan berat numerik $>0$?};
+\node[drop,right=0.9cm of q1] (d1) {856 pengiriman dibuang};
+\node[proc,below=of q1] (n5) {Mengambil biaya dan berat dari baris tersebut; menjumlahkan kuantitas dan nilai barang; sumber = pabrik bernilai terbesar\\ $\rightarrow$ 6.174 pengiriman};
+\node[proc,below=of n5] (n6) {Mengelompokkan 88 nama pabrik menjadi kelompok produsen; From RDC menjadi node SCMS RDC};
+\node[proc,below=of n6] (n7) {Menghitung biaya per kg = freight $\div$ berat};
+\node[dec,below=of n7] (q2) {Biaya per kg di luar batas $3\times$IQR (skala log)?};
+\node[drop,right=0.9cm of q2] (d2) {19 pengiriman dibuang};
+\node[dec,below=0.55cm of q2] (q3) {Sumber berkelompok ``Lainnya''?};
+\node[drop,right=0.9cm of q3] (dq3) {118 pengiriman dibuang};
+\node[proc,below=0.55cm of q3] (n8) {Menyimpan 4 kolom: sumber, tujuan,\\ berat\_kg, biaya\_freight\_usd};
+\node[term,below=of n8] (n9) {Data bersih: 6.037 pengiriman};
+\foreach \a/\b in {n1/n2,n2/n3,n3/n4,n4/q1}{\draw[arr] (\a)--(\b);}
+\draw[arr] (n3)--(d3);
+\draw[arr] (q1)--node[lbl,right]{ya}(n5);
+\draw[arr] (q1)--node[lbl,above]{tidak}(d1);
+\draw[arr] (n5)--(n6); \draw[arr] (n6)--(n7); \draw[arr] (n7)--(q2);
+\draw[arr] (q2)--node[lbl,above]{ya}(d2);
+\draw[arr] (q2)--node[lbl,right]{tidak}(q3);
+\draw[arr] (q3)--node[lbl,above]{ya}(dq3);
+\draw[arr] (q3)--node[lbl,right]{tidak}(n8);
+\draw[arr] (n8)--(n9);
+\end{tikzpicture}
+\end{adjustbox}
+\caption{Alur pembersihan data. Kotak putus-putus menunjukkan data yang dibuang pada tiap tahap.}\label{fig:bersih}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{Tahapan pembersihan data.}\label{tab:bersih}
+\small
+\begin{tabular}{@{}c p{8cm} p{4.3cm}@{}}
+\toprule
+No & Perlakuan & Hasil \\
+\midrule
+1 & Membaca berkas CSV (enkode latin-1) & 10.324 baris, 33 kolom \\
+2 & Menghapus duplikat (semua kolom identik selain ID); duplikat berdasarkan ID tidak ada & 4 baris dibuang, sisa 10.320 \\
+3 & Memeriksa isi kolom biaya: 6.198 baris numerik; 1.442 \textit{included in commodity cost}, 239 \textit{invoiced separately}, 2.441 rujukan ke baris lain & 4.122 baris non-numerik \\
+4 & Memeriksa isi kolom berat: 6.372 baris numerik; 1.507 \textit{captured separately}, 2.441 rujukan ke baris lain & 3.948 baris non-numerik \\
+5 & Mengelompokkan baris menurut nomor ASN/DN & 7.030 pengiriman \\
+6 & Mengambil pengiriman yang biaya dan beratnya numerik dan positif; kuantitas dan nilai barang dijumlahkan per pengiriman & 6.174 pengiriman \\
+7 & Mengelompokkan 88 nama \textit{Manufacturing Site} menurut perusahaan produsen; pengiriman \textit{From RDC} dijadikan satu node SCMS RDC & 21 produsen, 1 RDC, 1 ``Lainnya'' \\
+8 & Menghitung biaya per kg dan membuang pencilan ekstrem pada skala log (di luar $Q_1-3\,\mathrm{IQR}$ sampai $Q_3+3\,\mathrm{IQR}$, atau 0,026--1.749 USD/kg) & 19 pengiriman dibuang \\
+9 & Membuang pengiriman berkelompok ``Lainnya'' karena tidak mewakili satu lokasi produsen & 118 pengiriman dibuang \\
+10 & Memilih kolom yang dibutuhkan: sumber, tujuan, berat, biaya \textit{freight} & 6.037 pengiriman, 4 kolom \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Beberapa tahapan dalam proses pembersihan data memerlukan penjelasan lebih lanjut. Pada tahap 7, nama seperti \textit{Cipla, Goa}, \textit{Cipla, Kurkumbh}, dan \textit{Cipla, Patalganga} dilebur menjadi satu node ``Cipla (India)'' karena berasal dari perusahaan yang sama; penggabungan serupa dilakukan untuk Aurobindo, Hetero, Mylan, dan produsen lain. Jika satu pengiriman berasal dari lebih dari satu pabrik (jarang terjadi), sumbernya ditetapkan sebagai pabrik dengan nilai barang terbesar dalam pengiriman itu. Pada tahap 8, contoh pencilan yang dibuang antara lain pengiriman seberat 1--2 kg dengan biaya \textit{freight} ribuan dolar, dan pengiriman 857.354 kg dengan \textit{freight} hanya 5.157 USD. Keduanya hampir pasti kesalahan pencatatan satuan atau angka, bukan tarif sungguhan. Dari 33 kolom awal, hanya empat yang dipertahankan sebagai input model (Tabel~\ref{tab:kolom}); kolom lain seperti kode proyek, tanggal proses, nama vendor, deskripsi produk, harga satuan, dan asuransi tidak memengaruhi pasokan, permintaan, maupun biaya.
+
+\begin{table}[htbp]
+\centering
+\caption{Kolom data yang dipakai pada model.}\label{tab:kolom}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Kolom akhir & Kolom asal & Peran dalam model \\
+\midrule
+\texttt{sumber} & \textit{Manufacturing Site, Fulfill Via} & node sumber $i$ \\
+\texttt{tujuan} & \textit{Country} & node tujuan $j$ \\
+\texttt{berat\_kg} & \textit{Weight (Kilograms)} & dasar $a_i$, $b_j$ \\
+\texttt{biaya\_freight\_usd} & \textit{Freight Cost (USD)} & dasar $c_{ij}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Pembentukan Node, Pasokan, Permintaan, dan Biaya}
+Setiap node sumber adalah satu kelompok produsen atau gudang SCMS RDC, dan setiap node tujuan adalah satu negara. Notasi yang dipakai: $w_k$ untuk berat dan $f_k$ untuk biaya \textit{freight} pengiriman ke-$k$, sedangkan $K_{ij}$ himpunan pengiriman dari $i$ ke $j$. Maka
+\begin{equation}
+a_i = \sum_j \sum_{k\in K_{ij}} w_k, \qquad b_j = \sum_i \sum_{k\in K_{ij}} w_k, \qquad c_{ij} = \frac{\sum_{k\in K_{ij}} f_k}{\sum_{k\in K_{ij}} w_k}. \label{eq:agg}
+\end{equation}
+Pasokan dan permintaan dihitung berdasarkan kumpulan data pengiriman yang sama. Oleh karena itu, total pasokan dan total permintaan memiliki nilai yang sama, yaitu 19.550.180 kg. Kondisi ini menunjukkan bahwa model transportasi telah berimbang sehingga tidak diperlukan penambahan node fiktif (\textit{dummy}). Biaya rute dihitung sebagai rasio total \textit{freight} terhadap total berat (rata-rata tertimbang) agar pengiriman besar berpengaruh lebih besar daripada pengiriman kecil. Hasilnya terbentuk $22+38=60$ node dan 258 rute teramati dari 836 kemungkinan (30,9\%).
+
+\subsection{Asumsi}
+Pemodelan ini bertumpu pada asumsi-asumsi berikut.
+\begin{enumerate}
+  \item Seluruh komoditas dianggap homogen dan diukur dalam kilogram, tanpa membedakan obat dan alat tes.
+  \item Ongkos angkut linear terhadap berat dan konstan pada setiap rute, yaitu sama dengan rata-rata tertimbang 2006--2015 tanpa koreksi inflasi.
+  \item Pasokan tiap sumber sama dengan volume yang tercatat pernah dikirim darinya, dan permintaan tiap negara sama dengan volume yang tercatat diterimanya.
+  \item Rute yang tidak pernah muncul di data dianggap tidak tersedia (biaya Big-M); tidak dilakukan estimasi biaya untuk rute tersebut.
+  \item Satu pengiriman dianggap berasal dari satu sumber utama, yaitu pabrik dengan nilai barang terbesar.
+  \item SCMS RDC diperlakukan sebagai sumber, bukan sebagai titik transit. Biaya yang dihitung hanya \textit{freight} dari sumber ke tujuan, tanpa asuransi, bea, dan penanganan.
+  \item Moda angkut (udara, truk, laut) tidak dibedakan, dan tidak ada batas kapasitas pada rute.
+\end{enumerate}
+
+
+
+\subsection{Algoritma Penyelesaian}
+Alur ketiga metode solusi awal ditunjukkan pada Gambar~\ref{fig:metode}, dan alur iterasi MODI pada Gambar~\ref{fig:modi}. Tiga hal teknis perlu dicatat.
+\begin{enumerate}
+  \item Bila pasokan baris dan permintaan kolom habis bersamaan, hanya baris yang dicoret sehingga jumlah variabel dasar tetap $m+n-1$; kolom yang tertinggal menerima alokasi nol pada langkah berikutnya.
+  \item Pada MODI nilai $u_i$ dan $v_j$ dihitung dengan menelusuri pohon sel basis mulai dari baris pertama, dan siklus dicari sebagai lintasan dari baris ke kolom sel masuk pada graf sel basis.
+  \item Iterasi berhenti ketika $d_{ij} \ge -10^{-9}$ untuk semua sel non-basis, dengan batas pengaman 5.000 iterasi yang tidak pernah tercapai.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{adjustbox}{max width=\textwidth}
+\hyphenpenalty=10000 \exhyphenpenalty=10000
+\begin{tikzpicture}[node distance=0.4cm]
+% ---- NWC
+\node[term] (n0) at (0,0) {NWC: Mulai};
+\node[proc3,below=of n0] (n1) {Baca $a_i$, $b_j$, $c_{ij}$; mulai dari sel $(1,1)$};
+\node[proc3,below=of n1] (n2) {$x_{ij}=\min(a_i,b_j)$;\\ kurangi $a_i$ dan $b_j$};
+\node[proc3,below=of n2] (n3) {Jika $a_i=0$ pindah ke baris berikutnya; jika $b_j=0$ pindah ke kolom berikutnya};
+\node[dec3,below=0.5cm of n3] (n4) {Semua terpenuhi?};
+\node[term,below=0.5cm of n4] (n5) {Selesai (solusi awal)};
+\draw[arr] (n0)--(n1); \draw[arr] (n1)--(n2); \draw[arr] (n2)--(n3); \draw[arr] (n3)--(n4);
+\draw[arr] (n4.south)--node[lbl,right]{ya}(n5.north);
+\draw[arr] (n4.west)--node[lbl,above]{tidak}++(-0.95,0)--++(0,0)|-(n2.west);
+% ---- LCM
+\node[term] (l0) at (5.6,0) {LCM: Mulai};
+\node[proc3,below=of l0] (l1) {Baca $a_i$, $b_j$, $c_{ij}$; semua baris dan kolom aktif};
+\node[proc3,below=of l1] (l2) {Pilih sel aktif dengan $c_{ij}$ terkecil};
+\node[proc3,below=of l2] (l3) {$x_{ij}=\min(a_i,b_j)$;\\ kurangi $a_i$ dan $b_j$};
+\node[proc3,below=of l3] (l4) {Coret baris atau kolom yang habis (bila keduanya habis, coret baris)};
+\node[dec3,below=0.5cm of l4] (l5) {Masih ada baris dan kolom aktif?};
+\node[term,below=0.5cm of l5] (l6) {Selesai (solusi awal)};
+\foreach \a/\b in {l0/l1,l1/l2,l2/l3,l3/l4,l4/l5}{\draw[arr] (\a)--(\b);}
+\draw[arr] (l5.south)--node[lbl,right]{tidak}(l6.north);
+\draw[arr] (l5.west)--node[lbl,above]{ya}++(-0.95,0)|-(l2.west);
+% ---- VAM
+\node[term] (v0) at (11.2,0) {VAM: Mulai};
+\node[proc3,below=of v0] (v1) {Baca $a_i$, $b_j$, $c_{ij}$; semua baris dan kolom aktif};
+\node[proc3,below=of v1] (v2) {Hitung penalti $p_i$ dan $q_j$ semua garis aktif};
+\node[proc3,below=of v2] (v3) {Pilih garis dengan penalti terbesar};
+\node[proc3,below=of v3] (v4) {Pilih sel termurah pada garis itu; $x_{ij}=\min(a_i,b_j)$};
+\node[proc3,below=of v4] (v5) {Kurangi $a_i$ dan $b_j$; coret baris atau kolom yang habis};
+\node[dec3,below=0.5cm of v5] (v6) {Masih ada baris dan kolom aktif?};
+\node[term,below=0.5cm of v6] (v7) {Selesai (solusi awal)};
+\foreach \a/\b in {v0/v1,v1/v2,v2/v3,v3/v4,v4/v5,v5/v6}{\draw[arr] (\a)--(\b);}
+\draw[arr] (v6.south)--node[lbl,right]{tidak}(v7.north);
+\draw[arr] (v6.west)--node[lbl,above]{ya}++(-0.95,0)|-(v2.west);
+\end{tikzpicture}
+\end{adjustbox}
+\caption{Alur iterasi NWC, LCM, dan VAM untuk memperoleh solusi dasar layak awal.}\label{fig:metode}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{adjustbox}{max width=\textwidth}
+\hyphenpenalty=10000 \exhyphenpenalty=10000
+\begin{tikzpicture}[node distance=0.45cm]
+\node[term,text width=5.2cm] (m0) {Solusi dasar layak awal (NWC, LCM, atau VAM)};
+\node[proc,below=of m0] (m1) {Hitung $u_i$ dan $v_j$ dari sel basis:\\ $u_i+v_j=c_{ij}$, dengan $u_1=0$};
+\node[proc,below=of m1] (m2) {Hitung $d_{ij}=c_{ij}-u_i-v_j$\\ untuk semua sel non-basis};
+\node[dec,below=of m2] (m3) {Semua $d_{ij}\ge 0$?};
+\node[term,right=1cm of m3] (m3y) {Optimal: hitung $Z=\sum c_{ij}x_{ij}$};
+\node[proc,below=of m3] (m4) {Pilih sel masuk: $d_{ij}$ paling negatif};
+\node[proc,below=of m4] (m5) {Cari siklus tertutup (sel masuk dan sel basis); beri tanda $+$ dan $-$ bergantian mulai dari sel masuk};
+\node[proc,below=of m5] (m6) {$\theta=\min x_{ij}$ pada sel bertanda $-$};
+\node[proc,below=of m6] (m7) {Tambah $\theta$ pada sel $+$, kurangi pada sel $-$; sel $-$ yang menjadi nol keluar dari basis};
+\foreach \a/\b in {m0/m1,m1/m2,m2/m3,m4/m5,m5/m6,m6/m7}{\draw[arr] (\a)--(\b);}
+\draw[arr] (m3)--node[lbl,above]{ya}(m3y);
+\draw[arr] (m3)--node[lbl,right]{tidak}(m4);
+\draw[arr] (m7.west)--++(-0.7,0)|-(m1.west);
+\end{tikzpicture}
+\end{adjustbox}
+\caption{Alur satu iterasi MODI sampai tercapai solusi optimal.}\label{fig:modi}
+\end{figure}
+
+\subsection{Paket Program}
+Seluruh pengolahan dikerjakan dengan Python 3 pada Jupyter Notebook, memakai pandas untuk pembersihan dan agregasi, NumPy untuk komputasi matriks sebagaimana dijelaskan oleh Harris \textit{et al.}\ \cite{harris2020}, serta matplotlib dan seaborn untuk grafik. NWC, LCM, VAM, dan MODI ditulis sendiri sebagai fungsi terpisah dengan masukan matriks biaya, vektor pasokan, dan vektor permintaan. Tidak ada \textit{solver} program linear yang dipakai, sehingga seluruh iterasi dapat ditelusuri. Sebagai pemeriksaan, biaya akhir ketiga metode harus sama karena berasal dari masalah yang sama.
+
+
+\subsection{Visualisasi Geografis}
+
+Visualisasi geografis dipakai untuk menampilkan persebaran node sumber dan negara tujuan beserta hubungan rute pengiriman dalam jaringan distribusi SCMS-USAID. Peta dasar yang digunakan adalah OpenStreetMap, dengan posisi tiap node ditentukan dari koordinat lintang dan bujurnya.
+
+Visualisasi disajikan dalam format HTML sehingga dapat dibuka secara interaktif melalui peramban. Elemen yang ditampilkan mencakup lokasi node sumber, lokasi negara tujuan, dan keterhubungan antar-node berdasarkan rute pengiriman yang tercatat pada dataset.
+
+Melalui visualisasi ini, struktur jaringan distribusi hasil pengolahan data dapat dipahami secara geografis, termasuk pola persebaran sumber dan tujuan serta keterkaitan antar-rute.
+
+
+% =====================================================================
+\section{Hasil dan Pembahasan}
+\subsection{Gambaran Data}
+Setelah pembersihan, tersisa 6.037 pengiriman dengan total berat 19.550.180 kg dan total \textit{freight} 67.933.960 USD. Biaya rata-rata tertimbang adalah 3,475 USD/kg, sedangkan median biaya per pengiriman 7,12 USD/kg. Perbedaan antara kedua nilai tersebut menunjukkan bahwa pengiriman dengan volume lebih besar cenderung memiliki biaya \textit{freight} per kilogram yang lebih rendah. Berat pengiriman bersifat sangat miring ke kanan, dengan median 1.092 kg dan maksimum 112.027 kg. Moda udara mendominasi (3.965 pengiriman atau 65,7\%), disusul truk (19,2\%), \textit{air charter} (7,0\%), dan laut (4,7\%); sisanya 3,5\% tidak mencatat moda. Pengiriman via RDC mencakup 3.186 pengiriman (52,8\%) dan 70,2\% dari seluruh berat.
+
+Biaya per kg juga berubah menurut tahun (Gambar~\ref{fig:tahun}). Nilai tertimbang turun dari 7,27 USD/kg pada 2006 menjadi 2,44 USD/kg pada 2015, walaupun pada 2006 hanya ada 30 pengiriman sehingga angka tahun itu kurang kokoh. Penurunan ini sebagian mencerminkan perubahan komposisi muatan dan moda, bukan semata efisiensi. Karena model memakai seluruh tahun sekaligus, biaya rute yang dihasilkan merupakan nilai rata-rata sepanjang periode.
+
+\gambar{f1_hist}{0.8}{Sebaran $\log_{10}$ biaya per kg tiap pengiriman sebelum pencilan dibuang. Garis putus-putus menandai batas $Q_1-3\,\mathrm{IQR}$ dan $Q_3+3\,\mathrm{IQR}$.}{fig:sebaran}
+
+\gambar{f2_tahun}{0.9}{Jumlah pengiriman dan biaya tertimbang per kg menurut tahun penerimaan.}{fig:tahun}
+
+\subsection{Struktur Node dan Rute}
+Distribusi pasokan menunjukkan tingkat konsentrasi yang tinggi pada satu sumber utama. SCMS RDC sendiri menyumbang 13.718.694 kg atau 70,17\% dari total, jauh di atas produsen terbesar berikutnya, Aurobindo, dengan 7,76\% (Tabel~\ref{tab:sumber}, Gambar~\ref{fig:pasokan}). Permintaan tersebar di berbagai negara tujuan, tetapi distribusinya masih didominasi oleh sejumlah negara dengan volume permintaan terbesar. Sepuluh negara teratas (Tabel~\ref{tab:top10}) menyerap 90,7\% volume, dipimpin Nigeria dengan 3.866.619 kg, sementara enam negara lain menerima kurang dari seribu kilogram. Daftar permintaan lengkap ada pada Lampiran~\ref{app:B}.
+
+\begin{table}[htbp]
+\centering
+\caption{Node sumber dan pasokannya.}\label{tab:sumber}
+\small
+\begin{tabular}{@{}r l r r r@{}}
+\toprule
+No & Node sumber & Supply (kg) & Pangsa (\%) & Tujuan terhubung \\
+\midrule
+1 & SCMS RDC & 13.718.694 & 70,17 & 30 \\
+2 & Aurobindo (India) & 1.517.691 & 7,76 & 21 \\
+3 & Mylan/Matrix (India) & 763.471 & 3,91 & 17 \\
+4 & Alere/Inverness (Japan) & 692.498 & 3,54 & 30 \\
+5 & Hetero (India) & 654.646 & 3,35 & 16 \\
+6 & Cipla (India) & 620.200 & 3,17 & 16 \\
+7 & Strides (India) & 393.004 & 2,01 & 11 \\
+8 & AbbVie/Abbott (Eropa) & 246.440 & 1,26 & 17 \\
+9 & Trinity Biotech (Irlandia) & 210.178 & 1,08 & 20 \\
+10 & KHB (China) & 209.605 & 1,07 & 6 \\
+11 & Standard Diagnostics (Korea) & 134.591 & 0,69 & 12 \\
+12 & GSK & 105.406 & 0,54 & 4 \\
+13 & Chembio (USA) & 94.572 & 0,48 & 8 \\
+14 & Micro Labs (India) & 58.706 & 0,30 & 9 \\
+15 & Emcure (India) & 56.867 & 0,29 & 8 \\
+16 & MSD & 23.718 & 0,12 & 5 \\
+17 & BMS (Eropa) & 15.308 & 0,08 & 9 \\
+18 & Ranbaxy (India) & 10.823 & 0,06 & 4 \\
+19 & Novartis & 9.962 & 0,05 & 1 \\
+20 & Orasure (USA) & 7.670 & 0,04 & 3 \\
+21 & Roche & 5.257 & 0,03 & 8 \\
+22 & Janssen & 873 & 0,00 & 3 \\
+\midrule
+ & \textbf{Total} & \textbf{19.550.180} & \textbf{100,00} & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\gambar{f3_sd}{0.95}{Pasokan seluruh node sumber (skala log) dan permintaan 15 negara tujuan terbesar.}{fig:pasokan}
+
+\begin{table}[htbp]
+\centering
+\caption{Sepuluh negara tujuan dengan permintaan terbesar.}\label{tab:top10}
+\small
+\begin{tabular}{@{}r l r r r@{}}
+\toprule
+No & Negara tujuan & Demand (kg) & Pangsa (\%) & Sumber terhubung \\
+\midrule
+1 & Nigeria & 3.866.619 & 19,78 & 15 \\
+2 & Zambia & 2.635.348 & 13,48 & 9 \\
+3 & Mozambique & 2.347.865 & 12,01 & 9 \\
+4 & South Africa & 1.697.753 & 8,68 & 6 \\
+5 & Zimbabwe & 1.657.278 & 8,48 & 11 \\
+6 & C\^ote d'Ivoire & 1.379.976 & 7,06 & 13 \\
+7 & Tanzania & 1.368.242 & 7,00 & 15 \\
+8 & Uganda & 1.257.919 & 6,43 & 17 \\
+9 & Rwanda & 882.445 & 4,51 & 14 \\
+10 & Vietnam & 635.320 & 3,25 & 12 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Matriks biaya pada Gambar~\ref{fig:matriks} memperlihatkan bahwa jaringan ini jarang. Dari 836 sel, hanya 258 yang terisi dan sisanya, 578 sel, tidak pernah dipakai. Dari 258 rute itu, 44 hanya didukung satu pengiriman sehingga biayanya rentan terhadap kasus tunggal. Biaya per kg rute berkisar 0,51--351,21 USD/kg dengan median 8,67 dan rata-rata (tak tertimbang) 15,37. Hanya SCMS RDC dan Alere/Inverness yang terhubung ke 30 negara; produsen kecil seperti Novartis hanya melayani satu negara. Kondisi inilah yang membuat sel kosong harus diperlakukan hati-hati.
+
+\gambar{f4_heat}{0.95}{Matriks biaya $c_{ij}$ (USD/kg, skala log). Sel putih adalah rute yang tidak pernah muncul di data.}{fig:matriks}
+
+\subsection{Solusi Awal NWC, LCM, dan VAM}
+Ketiga metode dijalankan pada matriks biaya dengan Big-M, dan semuanya menghasilkan 59 sel dasar sesuai teori. Perbedaannya terletak pada kelayakan dan biaya (Tabel~\ref{tab:awal}).
+
+\subsubsection{NWC}
+Metode ini menentukan alokasi berdasarkan posisi sel pada matriks transportasi tanpa mempertimbangkan biaya pengiriman. Akibatnya, sebagian alokasi ditempatkan pada pasangan sumber dan tujuan yang tidak memiliki catatan rute pengiriman. Dari 59 sel dasar, 37 berada pada rute terlarang dengan total 2.413.372 kg (12,3\% dari seluruh volume). Dengan memasukkan Big-M, biayanya mencapai sekitar 8,5 miliar USD, angka yang hanya menegaskan bahwa solusinya tidak dapat dipakai apa adanya.
+
+\subsubsection{LCM}
+Metode ini jauh lebih baik karena sel murah diambil lebih dulu, tetapi tidak sempurna. Masih ada 8 sel dasar pada rute terlarang yang memuat 275.944 kg (1,4\%). Hal ini terjadi karena LCM menghabiskan sel-sel murah lebih dulu, sehingga tersisa pasangan sumber--tujuan yang hanya bisa dipertemukan lewat rute yang tidak ada. Biaya total dengan Big-M mendekati 1,03 miliar USD.
+
+\subsubsection{VAM}
+Seluruh 59 sel dasar VAM jatuh pada rute yang valid, sehingga solusinya layak dengan biaya 56.691.684 USD, atau 16,5\% di bawah biaya aktual (67.933.960 USD).
+
+\begin{table}[htbp]
+\centering
+\caption{Solusi awal ketiga metode. Biaya rute valid hanya menghitung alokasi pada rute yang pernah teramati.}\label{tab:awal}
+\small
+\begin{tabular}{@{}l r r r r l@{}}
+\toprule
+Metode & Sel pada & Berat pada & Biaya rute valid & Biaya dengan & Status \\
+ & rute terlarang & rute terlarang & (USD) & Big-M (USD) & \\
+\midrule
+NWC & 37 & 2.413.372 kg (12,3\%) & 72.073.871 & 8.548.077.672 & tidak layak \\
+LCM & 8 & 275.944 kg (1,4\%) & 62.022.909 & 1.031.165.832 & tidak layak \\
+VAM & 0 & 0 & 56.691.684 & 56.691.684 & layak \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Visualisasi Geografis Hasil Solusi Awal}
+
+Hasil alokasi awal yang diperoleh melalui metode North West Corner
+(NWC), Least Cost Method (LCM), dan Vogel's Approximation Method
+(VAM) divisualisasikan secara geografis menggunakan OpenStreetMap.
+Visualisasi ini menunjukkan hubungan antara node sumber dan negara
+tujuan berdasarkan alokasi pengiriman yang dihasilkan oleh masing-masing
+metode.
+
+Garis penghubung pada peta merepresentasikan rute dengan alokasi
+pengiriman positif, sedangkan ketebalan garis dapat digunakan untuk
+menggambarkan besarnya volume pengiriman. Visualisasi masing-masing
+metode ditampilkan pada Gambar~\ref{fig:peta-nwc},
+Gambar~\ref{fig:peta-lcm}, dan Gambar~\ref{fig:peta-vam}.
+
+Untuk memberikan gambaran yang lebih interaktif, visualisasi geografis
+hasil solusi awal juga disajikan dalam bentuk halaman web berbasis HTML.
+Halaman tersebut memungkinkan pengamatan terhadap persebaran rute
+pengiriman dari masing-masing metode secara lebih fleksibel.
+Visualisasi interaktif dapat diakses melalui tautan berikut:
+
+\begin{center}
+    \href{https://haruko09.github.io/FP_RO/peta_rute_scms.html}
+    {\textbf{Visualisasi Interaktif Hasil Solusi Awal}}
+\end{center}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{peta_nwc.png}
+    \caption{Visualisasi geografis alokasi pengiriman metode NWC}
+    \label{fig:peta-nwc}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{peta_lcm.png}
+    \caption{Visualisasi geografis alokasi pengiriman metode LCM}
+    \label{fig:peta-lcm}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{peta_vam.png}
+    \caption{Visualisasi geografis alokasi pengiriman metode VAM}
+    \label{fig:peta-vam}
+\end{figure}
+
+\FloatBarrier
+
+\subsection{Hasil Optimasi MODI}
+Setiap solusi awal kemudian dimasukkan ke MODI (Tabel~\ref{tab:modi}). Ketiganya berhenti pada biaya yang sama, yaitu 54.461.845 USD, tanpa satu pun alokasi pada rute terlarang. Jumlah iterasi yang dibutuhkan berbeda jauh: 97 untuk NWC, 42 untuk LCM, dan 16 untuk VAM. Gambar~\ref{fig:iter} memperlihatkan penurunan biaya pada tiap iterasi; garis NWC dan LCM mulai dari biaya Big-M yang sangat tinggi lalu jatuh ke wilayah biaya aktual dalam beberapa iterasi pertama, sedangkan VAM sudah berada di dekat optimum sejak awal.
+
+\begin{table}[htbp]
+\centering
+\caption{Hasil MODI untuk tiap solusi awal.}\label{tab:modi}
+\small
+\begin{tabular}{@{}l r r r r@{}}
+\toprule
+Metode & Biaya awal (USD) & Iterasi MODI & Biaya akhir (USD) & Sel terlarang akhir \\
+\midrule
+NWC & 8.548.077.672 & 97 & 54.461.845 & 0 \\
+LCM & 1.031.165.832 & 42 & 54.461.845 & 0 \\
+VAM & 56.691.684 & 16 & 54.461.845 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\gambar{f5_konv}{0.8}{Biaya total (skala log, termasuk Big-M) pada tiap iterasi MODI. Garis titik-titik menandai biaya aktual.}{fig:iter}
+
+Alokasi akhir ketiga metode identik sel demi sel (Lampiran~\ref{app:A}). Biaya reduksi terkecil pada sel non-basis bernilai 0,14 USD/kg, positif, sehingga solusi optimal ini tunggal. Seluruh 59 sel basis berisi alokasi positif, dan 15 sel di antaranya menggantikan sel pada solusi awal VAM. Contohnya, kiriman SCMS RDC ke Mozambique turun dari 2.347.865 kg menjadi 1.946.462 kg, sedangkan Alere/Inverness yang semula tidak melayani Mozambique kini mengirim 401.403 kg. Di Afrika Selatan, bagian Aurobindo naik dari 526.438 kg menjadi 1.419.467 kg, sementara bagian Cipla turun dari 620.200 kg menjadi 278.286 kg. Sebanyak 15 tujuan dilayani langsung oleh SCMS RDC pada solusi akhir, dengan total 13.718.694 kg, sama dengan pasokannya.
+
+\FloatBarrier
+
+\subsection{Visualisasi Geografis Hasil Optimasi MODI}
+
+Setelah proses optimasi menggunakan metode MODI, hasil alokasi
+pengiriman divisualisasikan secara geografis menggunakan
+OpenStreetMap. Visualisasi ini menunjukkan hubungan antara node
+sumber dan negara tujuan berdasarkan alokasi pengiriman optimal
+yang diperoleh dari proses optimasi.
+
+Garis penghubung pada peta merepresentasikan rute dengan alokasi
+pengiriman positif, sedangkan ketebalan garis menggambarkan
+besarnya volume pengiriman pada setiap rute. Visualisasi hasil
+optimasi MODI ditampilkan pada Gambar~\ref{fig:peta-modi}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[
+        width=\textwidth,
+        height=0.65\textheight,
+        keepaspectratio
+    ]{peta_modi.png}
+    \caption{Visualisasi geografis hasil optimasi MODI}
+    \label{fig:peta-modi}
+\end{figure}
+
+Visualisasi geografis hasil optimasi MODI juga disajikan dalam
+bentuk halaman web interaktif untuk memudahkan pengamatan terhadap
+persebaran rute dan besarnya alokasi pengiriman. Halaman visualisasi
+tersebut dapat diakses melalui tautan berikut.
+
+\begin{center}
+    \href{https://haruko09.github.io/FP_RO/peta_rute_scms.html}
+    {\textbf{Visualisasi Interaktif Hasil Optimasi MODI}}
+\end{center}
+
+\FloatBarrier
+
+\subsection{Pembahasan}
+Perbedaan jumlah iterasi sejalan dengan kualitas solusi awal. NWC tidak mempertimbangkan biaya pengiriman dalam menentukan alokasi awal. Pada penelitian ini, sekitar 69\% pasangan sumber dan tujuan merupakan rute yang tidak teramati. Akibatnya, solusi awal NWC masih memuat 37 sel dengan biaya Big-M sehingga diperlukan proses optimasi lebih lanjut menggunakan MODI untuk menghilangkan alokasi pada rute tersebut sekaligus memperbaiki total biaya pengiriman. LCM telah mempertimbangkan biaya pengiriman dalam proses alokasi, tetapi pemilihan berdasarkan biaya terkecil pada setiap tahap belum sepenuhnya menghindari rute yang tidak teramati. Hal ini terlihat dari masih adanya delapan sel dengan biaya Big-M pada solusi awal dan diperlukannya 42 iterasi MODI. VAM mempertimbangkan biaya peluang melalui perhitungan penalti pada setiap baris dan kolom, sehingga potensi peningkatan biaya akibat tidak memilih rute termurah dapat diperhitungkan dalam proses alokasi. Pada matriks jarang, baris atau kolom yang hanya punya satu atau dua rute valid mendapat penalti sangat besar (karena sel lainnya bernilai $M$) sehingga langsung diprioritaskan. Itulah sebabnya VAM praktis terhindar dari rute terlarang dan hanya memerlukan 16 iterasi.
+
+Dari sisi biaya, solusi optimal lebih murah 13.472.115 USD (19,83\%) daripada biaya aktual. Solusi awal VAM sudah 16,5\% di bawah biaya aktual dan hanya 4,09\% di atas optimum; MODI memangkas sisa selisih 2.229.839 USD. Karena ketiga metode berakhir pada solusi yang sama dan optimum bersifat tunggal, pilihan metode awal tidak memengaruhi hasil akhir. Pilihan itu hanya menentukan beban hitung, dan di sini VAM jelas paling hemat.
+
+Hasil ini perlu dibaca hati-hati. Pertama, penghematan dihitung dari biaya rata-rata per rute, padahal tarif aktual dipengaruhi moda, ukuran muatan, dan tahun. Kedua, sumber di dunia nyata tidak dapat saling menggantikan: obat tertentu hanya dibuat oleh produsen tertentu, sehingga pasokan satu pabrik tidak bisa dialihkan ke negara mana pun. Ketiga, sebagian rute hanya didukung satu pengiriman. Jadi angka penghematan lebih tepat dipandang sebagai batas atas potensi, bukan prediksi yang pasti tercapai.
+
+% =====================================================================
+\section{Kesimpulan dan Saran}
+\subsection{Kesimpulan}
+Berdasarkan hasil dan pembahasan, diperoleh kesimpulan yang menjawab rumusan masalah sebagai berikut.
+\begin{enumerate}
+  \item Data SCMS dapat dijadikan masalah transportasi setelah dibersihkan dengan tepat. Kunci utamanya adalah memakai pengiriman (ASN/DN) sebagai satuan analisis agar biaya tidak terhitung ganda. Dari 10.324 baris mentah diperoleh 6.037 pengiriman dengan empat kolom, yang membentuk 22 node sumber, 38 node tujuan, dan 258 rute teramati.
+  \item Dengan pasokan dan permintaan dari total berat pengiriman, masalahnya berimbang pada 19.550.180 kg. Sebanyak 578 dari 836 sel tidak tersedia sehingga perlu dilarang dengan Big-M.
+  \item NWC dan LCM menghasilkan solusi awal yang tidak layak pada data ini (masing-masing 12,3\% dan 1,4\% berat berada pada rute terlarang), sedangkan VAM menghasilkan solusi awal layak dengan biaya 56.691.684 USD.
+  \item Setelah dioptimalkan dengan MODI, ketiga metode mencapai biaya optimal yang sama, 54.461.845 USD, atau 19,83\% di bawah biaya aktual. Jumlah iterasi MODI sebesar 97 (NWC), 42 (LCM), dan 16 (VAM) menunjukkan bahwa VAM adalah titik awal yang paling efisien untuk data ini.
+\end{enumerate}
+
+\subsection{Saran}
+Penelitian selanjutnya dapat mengembangkan estimasi biaya untuk rute yang belum memiliki catatan pengiriman, misalnya dengan mempertimbangkan faktor jarak dan moda transportasi. Dengan demikian, rute yang belum teramati tidak harus langsung dianggap sebagai rute yang tidak tersedia. Peran RDC lebih tepat dimodelkan sebagai titik transit (\textit{transshipment}), dan analisis akan lebih tajam bila dipisah per kelompok produk serta dibatasi pada tahun-tahun terbaru, misalnya 2012--2015, agar tarif lebih seragam. Kapasitas rute dan kendala pasokan per produk perlu dimasukkan agar hasilnya lebih dekat dengan kondisi operasional. Bagi pengelola data, pencatatan \textit{freight} yang masih berupa teks (\textit{included in commodity cost}, \textit{invoiced separately}) layak dibenahi karena membuat sekitar sepertiga pengiriman tidak bisa dianalisis.
+
+% =====================================================================
+\appendix
+\section{Solusi Optimal Hasil MODI}\label{app:A}
+Tabel~\ref{tab:optimal} memuat 59 sel basis solusi optimal. Hasil yang sama diperoleh dari solusi awal NWC, LCM, maupun VAM.
+
+{\small\setlength{\tabcolsep}{2.5pt}
+\begin{longtable}{@{}r l l r r r@{}}
+\caption{Solusi optimal hasil MODI (59 sel basis, identik untuk solusi awal NWC, LCM, dan VAM).}\label{tab:optimal}\\
+\toprule
+No & Sumber & Tujuan & Alokasi (kg) & $c_{ij}$ (USD/kg) & Biaya (USD) \\
+\midrule
+\endfirsthead
+\toprule
+No & Sumber & Tujuan & Alokasi (kg) & $c_{ij}$ (USD/kg) & Biaya (USD) \\
+\midrule
+\endhead
+\midrule \multicolumn{6}{r}{\textit{bersambung}}\\
+\endfoot
+\midrule
+ & \textbf{Total} & & \textbf{19.550.180} & & \textbf{54.461.845}\\
+\bottomrule
+\endlastfoot
+1 & SCMS RDC & Nigeria & 3.856.657 & 2,68 & 10.326.970 \\
+2 & SCMS RDC & Zambia & 2.635.348 & 1,65 & 4.347.534 \\
+3 & SCMS RDC & Mozambique & 1.946.462 & 0,89 & 1.741.305 \\
+4 & SCMS RDC & Zimbabwe & 1.526.030 & 1,67 & 2.542.671 \\
+5 & SCMS RDC & Tanzania & 1.362.985 & 2,07 & 2.819.607 \\
+6 & SCMS RDC & C\^ote d'Ivoire & 1.255.014 & 3,36 & 4.213.584 \\
+7 & SCMS RDC & Rwanda & 823.760 & 4,29 & 3.535.331 \\
+8 & SCMS RDC & Ghana & 119.313 & 2,44 & 290.563 \\
+9 & SCMS RDC & Namibia & 72.936 & 4,30 & 313.618 \\
+10 & SCMS RDC & Congo, DRC & 59.902 & 8,96 & 536.920 \\
+11 & SCMS RDC & Burundi & 28.714 & 5,85 & 167.899 \\
+12 & SCMS RDC & South Sudan & 17.754 & 10,80 & 191.823 \\
+13 & SCMS RDC & Benin & 12.015 & 4,57 & 54.942 \\
+14 & SCMS RDC & Libya & 1.783 & 4,69 & 8.361 \\
+15 & SCMS RDC & Senegal & 21 & 30,13 & 633 \\
+16 & Aurobindo (India) & South Africa & 1.419.467 & 1,47 & 2.082.074 \\
+17 & Aurobindo (India) & Swaziland & 63.752 & 2,79 & 177.849 \\
+18 & Aurobindo (India) & Ethiopia & 34.472 & 3,73 & 128.560 \\
+19 & Mylan/Matrix (India) & Uganda & 706.291 & 3,29 & 2.321.720 \\
+20 & Mylan/Matrix (India) & Malawi & 57.180 & 1,42 & 81.116 \\
+21 & Alere/Inverness (Japan) & Mozambique & 401.403 & 8,62 & 3.461.900 \\
+22 & Alere/Inverness (Japan) & Haiti & 254.718 & 10,33 & 2.632.358 \\
+23 & Alere/Inverness (Japan) & Botswana & 25.047 & 2,06 & 51.607 \\
+24 & Alere/Inverness (Japan) & Pakistan & 7.998 & 12,99 & 103.864 \\
+25 & Alere/Inverness (Japan) & Sierra Leone & 1.719 & 18,45 & 31.710 \\
+26 & Alere/Inverness (Japan) & Lesotho & 856 & 12,93 & 11.064 \\
+27 & Alere/Inverness (Japan) & Mali & 725 & 34,07 & 24.704 \\
+28 & Alere/Inverness (Japan) & Guinea & 32 & 56,38 & 1.804 \\
+29 & Hetero (India) & Vietnam & 578.453 & 2,67 & 1.546.147 \\
+30 & Hetero (India) & Haiti & 73.868 & 2,31 & 170.310 \\
+31 & Hetero (India) & Togo & 2.325 & 5,06 & 11.754 \\
+32 & Cipla (India) & South Africa & 278.286 & 1,38 & 382.699 \\
+33 & Cipla (India) & Haiti & 230.484 & 3,09 & 712.311 \\
+34 & Cipla (India) & Uganda & 111.430 & 3,88 & 431.914 \\
+35 & Strides (India) & Uganda & 393.004 & 3,56 & 1.400.784 \\
+36 & AbbVie/Abbott (Eropa) & Cameroon & 196.671 & 6,96 & 1.368.653 \\
+37 & AbbVie/Abbott (Eropa) & Guyana & 24.758 & 7,71 & 190.924 \\
+38 & AbbVie/Abbott (Eropa) & Dominican Republic & 23.097 & 2,49 & 57.454 \\
+39 & AbbVie/Abbott (Eropa) & Angola & 1.914 & 8,70 & 16.656 \\
+40 & Trinity Biotech (Irlandia) & Kenya & 168.433 & 5,87 & 988.382 \\
+41 & Trinity Biotech (Irlandia) & Uganda & 31.013 & 8,64 & 268.033 \\
+42 & Trinity Biotech (Irlandia) & Guyana & 10.732 & 10,84 & 116.352 \\
+43 & KHB (China) & Ethiopia & 209.605 & 9,77 & 2.047.799 \\
+44 & Standard Diagnostics (Korea) & Zimbabwe & 131.248 & 7,33 & 962.652 \\
+45 & Standard Diagnostics (Korea) & Sudan & 2.676 & 12,50 & 33.440 \\
+46 & Standard Diagnostics (Korea) & Liberia & 667 & 25,77 & 17.187 \\
+47 & GSK & C\^ote d'Ivoire & 101.244 & 2,64 & 267.132 \\
+48 & GSK & Guatemala & 4.162 & 7,22 & 30.048 \\
+49 & Chembio (USA) & Ethiopia & 94.572 & 5,30 & 501.052 \\
+50 & Micro Labs (India) & Rwanda & 58.685 & 2,39 & 140.240 \\
+51 & Micro Labs (India) & Afghanistan & 21 & 25,03 & 526 \\
+52 & Emcure (India) & Vietnam & 56.867 & 3,07 & 174.604 \\
+53 & MSD & C\^ote d'Ivoire & 23.718 & 2,31 & 54.841 \\
+54 & BMS (Eropa) & Uganda & 15.308 & 0,51 & 7.775 \\
+55 & Ranbaxy (India) & Cameroon & 10.823 & 6,98 & 75.546 \\
+56 & Novartis & Nigeria & 9.962 & 9,29 & 92.508 \\
+57 & Orasure (USA) & Cameroon & 7.670 & 19,70 & 151.130 \\
+58 & Roche & Tanzania & 5.257 & 6,49 & 34.132 \\
+59 & Janssen & Uganda & 873 & 7,76 & 6.773 \\
+\end{longtable}
+}
+
+\section{Permintaan Seluruh Negara Tujuan}\label{app:B}
+
+{\small
+\begin{longtable}{@{}r l r r r@{}}
+\caption{Permintaan seluruh 38 negara tujuan.}\label{tab:demand}\\
+\toprule
+No & Negara tujuan & Demand (kg) & Pangsa (\%) & Sumber terhubung \\
+\midrule
+\endfirsthead
+\toprule
+No & Negara tujuan & Demand (kg) & Pangsa (\%) & Sumber terhubung \\
+\midrule
+\endhead
+\midrule \multicolumn{5}{r}{\textit{bersambung}}\\
+\endfoot
+\midrule
+ & \textbf{Total} & \textbf{19.550.180} & \textbf{100,00} & \\
+\bottomrule
+\endlastfoot
+1 & Nigeria & 3.866.619 & 19,78 & 15 \\
+2 & Zambia & 2.635.348 & 13,48 & 9 \\
+3 & Mozambique & 2.347.865 & 12,01 & 9 \\
+4 & South Africa & 1.697.753 & 8,68 & 6 \\
+5 & Zimbabwe & 1.657.278 & 8,48 & 11 \\
+6 & C\^ote d'Ivoire & 1.379.976 & 7,06 & 13 \\
+7 & Tanzania & 1.368.242 & 7,00 & 15 \\
+8 & Uganda & 1.257.919 & 6,43 & 17 \\
+9 & Rwanda & 882.445 & 4,51 & 14 \\
+10 & Vietnam & 635.320 & 3,25 & 12 \\
+11 & Haiti & 559.070 & 2,86 & 17 \\
+12 & Ethiopia & 338.649 & 1,73 & 9 \\
+13 & Cameroon & 215.164 & 1,10 & 10 \\
+14 & Kenya & 168.433 & 0,86 & 5 \\
+15 & Ghana & 119.313 & 0,61 & 7 \\
+16 & Namibia & 72.936 & 0,37 & 8 \\
+17 & Swaziland & 63.752 & 0,33 & 5 \\
+18 & Congo, DRC & 59.902 & 0,31 & 8 \\
+19 & Malawi & 57.180 & 0,29 & 3 \\
+20 & Guyana & 35.490 & 0,18 & 10 \\
+21 & Burundi & 28.714 & 0,15 & 4 \\
+22 & Botswana & 25.047 & 0,13 & 7 \\
+23 & Dominican Republic & 23.097 & 0,12 & 8 \\
+24 & South Sudan & 17.754 & 0,09 & 5 \\
+25 & Benin & 12.015 & 0,06 & 4 \\
+26 & Pakistan & 7.998 & 0,04 & 2 \\
+27 & Guatemala & 4.162 & 0,02 & 3 \\
+28 & Sudan & 2.676 & 0,01 & 3 \\
+29 & Togo & 2.325 & 0,01 & 2 \\
+30 & Angola & 1.914 & 0,01 & 5 \\
+31 & Libya & 1.783 & 0,01 & 1 \\
+32 & Sierra Leone & 1.719 & 0,01 & 2 \\
+33 & Lesotho & 856 & 0,00 & 1 \\
+34 & Mali & 725 & 0,00 & 2 \\
+35 & Liberia & 667 & 0,00 & 3 \\
+36 & Guinea & 32 & 0,00 & 1 \\
+37 & Afghanistan & 21 & 0,00 & 1 \\
+38 & Senegal & 21 & 0,00 & 1 \\
+\end{longtable}
+}
+
+% BibTeX: jangan sekaligus menambahkan lingkungan thebibliography manual.
+% unsrtnat kompatibel dengan natbib; urutan pustaka mengikuti sitasi pertama.
+\bibliographystyle{unsrtnat}
+\bibliography{jhep-indo-scms}
+
+\end{document}
